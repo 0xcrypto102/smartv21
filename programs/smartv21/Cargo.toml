@@ -1,0 +1,22 @@
+[package]
+name = "smartv21"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "smartv21"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+devnet = ["raydium-cpmm-cpi/devnet"]
+
+[dependencies]
+anchor-lang = "=0.29.0"
+anchor-spl = "=0.29.0"
+raydium-cpmm-cpi = { git = "https://github.com/raydium-io/raydium-cpi", package = "raydium-cpmm-cpi", branch = "anchor-0.29.0" }
+spl-memo = "=4.0.0"
