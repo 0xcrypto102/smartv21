@@ -5,14 +5,14 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-smartv21 = "H22783urCUvrQSHtwou3x8D3JxxsG8tCiaEdbP9ygsf8"
+smartv21 = "DwWufV8w5CGhDb8c9oNApP4rPeb2HAccXun2kBGehbXF"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "https://devnet.helius-rpc.com/?api-key=44b7171f-7de7-4e68-9d08-eff1ef7529bd"
 wallet = "/root/.config/solana/kartos.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/smartv21.ts"
