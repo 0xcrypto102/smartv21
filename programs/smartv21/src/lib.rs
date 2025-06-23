@@ -11,7 +11,7 @@ use instructions::*;
 pub use state::*;
 pub use event::*;
 
-declare_id!("DwWufV8w5CGhDb8c9oNApP4rPeb2HAccXun2kBGehbXF");
+declare_id!("8ctvDHp7PAJezvxya7KV5dUS46572s5G1aTCrAnXvxRA");
 
 #[program]
 pub mod smartv21 {

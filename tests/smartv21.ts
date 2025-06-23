@@ -1,13 +1,14 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program, BN } from "@coral-xyz/anchor";
 import { Smartv21 } from "../target/types/smartv21";
-import { setupInitializeTest, initialize, wrap_sol, setupCreatePoolTest, getAuthAddress, getPoolAddress, getPoolLpMintAddress, getPoolVaultAddress, getOrcleAccountAddress, getUserAndPoolVaultAmount } from "./utils";
+import { setupInitializeTest, initialize, wrap_sol, setupCreatePoolTest, getAuthAddress, getPoolAddress, getPoolLpMintAddress, getPoolVaultAddress, getOrcleAccountAddress, getUserAndPoolVaultAmount, initSdk } from "./utils";
 import { PublicKey, SystemProgram, LAMPORTS_PER_SOL, Keypair, SYSVAR_RENT_PUBKEY, Transaction, sendAndConfirmTransaction, ComputeBudgetProgram } from "@solana/web3.js";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
-import { createSyncNativeInstruction, getAccount, getAssociatedTokenAddressSync, getOrCreateAssociatedTokenAccount, NATIVE_MINT, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { createSyncNativeInstruction, getAccount, getAssociatedTokenAddressSync, getOrCreateAssociatedTokenAccount, initializeTransferHookInstructionData, NATIVE_MINT, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { cpSwapProgram, createPoolFeeReceive, configAddress } from "./config";
 import { ASSOCIATED_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/utils/token";
-import { CpmmPoolInfoLayout } from "@raydium-io/raydium-sdk-v2";
+import { ApiV3PoolInfoStandardItemCpmm, CpmmKeys, CpmmRpcData, CurveCalculator, CpmmPoolInfoLayout } from '@raydium-io/raydium-sdk-v2'
+
 
 describe("smartv21", () => {
   // Configure the client to use the local cluster.
@@ -29,7 +30,6 @@ describe("smartv21", () => {
     
   // verifierKeypair = Keypair.generate();
   let verifierKeypair = Keypair.fromSecretKey(bs58.decode("17GRYSiRk9gUDgt8SM84F419YDaPCWwRsJp3w4e4a9YWChDDnarnUtCKjQnPxaiV6MhFTtrWoSndtbh2zshdDuL"));
-  /*
   it("Initialize the program", async() => {
     try {
       const [config] = await PublicKey.findProgramAddress(
@@ -62,6 +62,7 @@ describe("smartv21", () => {
       console.log("error:", error);
     }
   });
+ 
   it("Deposit wrapped sol to the service vault", async() => {
     try {
       // Warpped sol 
@@ -93,8 +94,6 @@ describe("smartv21", () => {
       console.log("error:", error);
     }
   });
-  */
-  /*
   it("Create the liquidity pool", async() => {
     try {
       const [config] = await PublicKey.findProgramAddress(
@@ -278,8 +277,80 @@ describe("smartv21", () => {
       console.log("error:", error);
     }
   });
-  */
-  /*
+  it("Buy tokens on raydium pool", async() => {
+    try {
+      const token0 = new PublicKey("So11111111111111111111111111111111111111112");
+      const token1 = new PublicKey("GsxssE5T1iofawozCsgeT4ARwXLpzhjCcjFDJrmN8Zre")
+      const [poolAddress] = await getPoolAddress(
+        configAddress,
+        token0,
+        token1,
+        cpSwapProgram
+      );
+
+      const accountInfo = await program.provider.connection.getAccountInfo(
+        poolAddress
+      );
+      const poolState = CpmmPoolInfoLayout.decode(accountInfo.data);
+      
+      const raydium = await initSdk(verifierKeypair);
+      const poolId = poolAddress.toBase58();
+
+      const inputAmount = new BN(0.1 * LAMPORTS_PER_SOL);
+      const inputMint = token0.toBase58();
+
+      let poolInfo: ApiV3PoolInfoStandardItemCpmm;
+      let poolKeys: CpmmKeys | undefined;
+      let rpcData: CpmmRpcData;
+
+      const data = await raydium.cpmm.getPoolInfoFromRpc(poolId);
+      poolInfo = data.poolInfo;
+      poolKeys = data.poolKeys;
+      rpcData = data.rpcData;
+
+      if (inputMint !== poolInfo.mintA.address && inputMint !== poolInfo.mintB.address)
+        throw new Error('input mint does not match pool')
+
+       const baseIn = inputMint === poolInfo.mintA.address
+
+      // swap pool mintA for mintB
+      const swapResult = CurveCalculator.swap(
+        inputAmount,
+        baseIn ? rpcData.baseReserve : rpcData.quoteReserve,
+        baseIn ? rpcData.quoteReserve : rpcData.baseReserve,
+        rpcData.configInfo!.tradeFeeRate
+      );
+
+      console.log("swapResult->", swapResult);
+
+      const { execute } = await raydium.cpmm.swap({
+        poolInfo,
+        poolKeys,
+        inputAmount,
+        swapResult,
+        slippage: 0.1, // range: 1 ~ 0.0001, means 100% ~ 0.01%
+        baseIn,
+        // optional: set up priority fee here
+        computeBudgetConfig: {
+          units: 600000,
+          microLamports: 4659150,
+        },
+
+        // optional: add transfer sol to tip account instruction. e.g sent tip to jito
+        txTipConfig: {
+          address: new PublicKey('96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5'),
+          amount: new BN(10000000), // 0.01 sol
+        },
+      });
+
+      const { txId } = await execute({ sendAndConfirm: true })
+      console.log(`swapped: ${poolInfo.mintA.symbol} to ${poolInfo.mintB.symbol}:`, {
+        txId: `${txId}`,
+      })
+    } catch (error) {
+      console.log("error:", error);
+    }
+  });
   it("Remove Liquidity", async()  => {
     try {
       const connection = anchor.getProvider().connection;
@@ -292,9 +363,12 @@ describe("smartv21", () => {
         [Buffer.from("vault")],
         program.programId
       );
-      const token0 = NATIVE_MINT; 
+
+       const token0 = new PublicKey("So11111111111111111111111111111111111111112");
+      const token1 = new PublicKey("GsxssE5T1iofawozCsgeT4ARwXLpzhjCcjFDJrmN8Zre")
+      // const token0 = NATIVE_MINT; 
       const token0Program = TOKEN_PROGRAM_ID;
-      const token1 = new PublicKey('47fRyTShN9SQ7MFXTDa6NF6B68pYnxLqo1BLCR5q54uW');
+      // const token1 = new PublicKey('Cg2WPRNuyxfT81tGU2xwdwYX5ZEc7v8NqKmmC7SGeHvy');
       const token1Program = TOKEN_PROGRAM_ID;
 
       const [auth] = await getAuthAddress(cpSwapProgram);
@@ -398,8 +472,6 @@ describe("smartv21", () => {
       console.log("error:", error);
     }
   });
-  */
-  /*
   it("Liquidate loan", async()  => {
     try {
       const connection = anchor.getProvider().connection;
@@ -518,7 +590,6 @@ describe("smartv21", () => {
       console.log("error:", error);
     }
   });
-  */
   it("Withdraw wrapped sol to the service vault", async() => {
     try {
       // Warpped sol 
@@ -533,7 +604,7 @@ describe("smartv21", () => {
         program.programId
       );
       
-      const tx = await program.rpc.withdraw(new anchor.BN(2.499999998 * LAMPORTS_PER_SOL), {
+      const tx = await program.rpc.withdraw(new anchor.BN(2.1 * LAMPORTS_PER_SOL), {
         accounts: {
           admin: owner.publicKey,
           config,

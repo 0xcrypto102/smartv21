@@ -5,7 +5,7 @@ __metadata:
   version: 8
   cacheKey: 10c0
 
-"@babel/runtime@npm:^7.10.5, @babel/runtime@npm:^7.25.0":
+"@babel/runtime@npm:^7.25.0":
   version: 7.27.6
   resolution: "@babel/runtime@npm:7.27.6"
   checksum: 10c0/89726be83f356f511dcdb74d3ea4d873a5f0cf0017d4530cb53aa27380c01ca102d573eff8b8b77815e624b1f8c24e7f0311834ad4fb632c90a770fda00bd4c8
@@ -114,70 +114,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@project-serum/anchor@npm:^0.11.1":
-  version: 0.11.1
-  resolution: "@project-serum/anchor@npm:0.11.1"
+"@raydium-io/raydium-sdk-v2@npm:0.1.135-alpha":
+  version: 0.1.135-alpha
+  resolution: "@raydium-io/raydium-sdk-v2@npm:0.1.135-alpha"
   dependencies:
-    "@project-serum/borsh": "npm:^0.2.2"
-    "@solana/web3.js": "npm:^1.17.0"
-    base64-js: "npm:^1.5.1"
-    bn.js: "npm:^5.1.2"
-    bs58: "npm:^4.0.1"
-    buffer-layout: "npm:^1.2.0"
-    camelcase: "npm:^5.3.1"
-    crypto-hash: "npm:^1.3.0"
-    eventemitter3: "npm:^4.0.7"
-    find: "npm:^0.3.0"
-    js-sha256: "npm:^0.9.0"
-    pako: "npm:^2.0.3"
-    snake-case: "npm:^3.0.4"
-    toml: "npm:^3.0.0"
-  checksum: 10c0/192f2e21c20f845433842824f32eb3400f5a763e06a36594063742282cd8b8074b9676bc4ff1383e4fee798bf82f89e9460f124b4d60053d235e17014bcfe712
-  languageName: node
-  linkType: hard
-
-"@project-serum/borsh@npm:^0.2.2":
-  version: 0.2.5
-  resolution: "@project-serum/borsh@npm:0.2.5"
-  dependencies:
-    bn.js: "npm:^5.1.2"
-    buffer-layout: "npm:^1.2.0"
-  peerDependencies:
-    "@solana/web3.js": ^1.2.0
-  checksum: 10c0/84fb4d5384807359f7de2ce17165bc28b3e6f51193ed8699734fa90212693822c5d02ecb6a602287cbc71f540a938c13a7f6ce50d5b9d57318adb01fca5e0804
-  languageName: node
-  linkType: hard
-
-"@project-serum/serum@npm:^0.13.65":
-  version: 0.13.65
-  resolution: "@project-serum/serum@npm:0.13.65"
-  dependencies:
-    "@project-serum/anchor": "npm:^0.11.1"
-    "@solana/spl-token": "npm:^0.1.6"
-    "@solana/web3.js": "npm:^1.21.0"
-    bn.js: "npm:^5.1.2"
-    buffer-layout: "npm:^1.2.0"
-  checksum: 10c0/6fc4d79989d70e1dfd80c5641db94cefb335f9e477f63eb51468634218b8d315c275e1fa6b26c5f09910c2f318fc0d1da2aa037da62477bf1449abbb98b6dcc0
-  languageName: node
-  linkType: hard
-
-"@raydium-io/raydium-sdk-v2@npm:^0.1.13-alpha":
-  version: 0.1.13-alpha
-  resolution: "@raydium-io/raydium-sdk-v2@npm:0.1.13-alpha"
-  dependencies:
-    "@project-serum/serum": "npm:^0.13.65"
     "@solana/buffer-layout": "npm:^4.0.1"
-    "@solana/spl-token": "npm:^0.4.6"
-    "@solana/web3.js": "npm:^1.91.8"
+    "@solana/spl-token": "npm:^0.4.8"
+    "@solana/web3.js": "npm:^1.95.3"
     axios: "npm:^1.1.3"
     big.js: "npm:^6.2.1"
     bn.js: "npm:^5.2.1"
-    buffer: "npm:^6.0.3"
     dayjs: "npm:^1.11.5"
     decimal.js-light: "npm:^2.5.1"
+    jsonfile: "npm:^6.1.0"
     lodash: "npm:^4.17.21"
     toformat: "npm:^2.0.0"
-  checksum: 10c0/6f93ab9746c4728c187a6da587913e0023c792490ab77dcb9f61033c98929a47d0a5102112c2a761fd03fd9cfc74d16316e88f9092cba444d5fe5bda880d67db
+    tsconfig-paths: "npm:^4.2.0"
+  checksum: 10c0/ea23e45b465ecfe9f2d8997982515fa2ffb7a1c9c91ebae4a8a771e0be404e2c8727dc4ea857a18b60375a88fb6480561802b854bd523ae50580c29e8b0d1537
   languageName: node
   linkType: hard
 
@@ -355,21 +308,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@solana/spl-token@npm:^0.1.6":
-  version: 0.1.8
-  resolution: "@solana/spl-token@npm:0.1.8"
-  dependencies:
-    "@babel/runtime": "npm:^7.10.5"
-    "@solana/web3.js": "npm:^1.21.0"
-    bn.js: "npm:^5.1.0"
-    buffer: "npm:6.0.3"
-    buffer-layout: "npm:^1.2.0"
-    dotenv: "npm:10.0.0"
-  checksum: 10c0/adae2cc9bb24054be183faa2bc95de70c00b34f048dc60b51ea20ece53712365233cff1710d9f78e017bb013121c29be26780c4a3672dff7582227cffff1301f
-  languageName: node
-  linkType: hard
-
-"@solana/spl-token@npm:^0.4.0, @solana/spl-token@npm:^0.4.6":
+"@solana/spl-token@npm:^0.4.0, @solana/spl-token@npm:^0.4.8":
   version: 0.4.13
   resolution: "@solana/spl-token@npm:0.4.13"
   dependencies:
@@ -384,7 +323,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@solana/web3.js@npm:^1.17.0, @solana/web3.js@npm:^1.21.0, @solana/web3.js@npm:^1.32.0, @solana/web3.js@npm:^1.68.0, @solana/web3.js@npm:^1.90.0, @solana/web3.js@npm:^1.91.8":
+"@solana/web3.js@npm:^1.32.0, @solana/web3.js@npm:^1.68.0, @solana/web3.js@npm:^1.90.0, @solana/web3.js@npm:^1.95.3":
   version: 1.98.2
   resolution: "@solana/web3.js@npm:1.98.2"
   dependencies:
@@ -628,7 +567,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"base64-js@npm:^1.3.1, base64-js@npm:^1.5.1":
+"base64-js@npm:^1.3.1":
   version: 1.5.1
   resolution: "base64-js@npm:1.5.1"
   checksum: 10c0/f23823513b63173a001030fae4f2dabe283b99a9d324ade3ad3d148e218134676f1ee8568c877cd79ec1c53158dcf2d2ba527a97c606618928ba99dd930102bf
@@ -675,7 +614,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bn.js@npm:^5.1.0, bn.js@npm:^5.1.2, bn.js@npm:^5.2.0, bn.js@npm:^5.2.1":
+"bn.js@npm:^5.1.2, bn.js@npm:^5.2.0, bn.js@npm:^5.2.1":
   version: 5.2.2
   resolution: "bn.js@npm:5.2.2"
   checksum: 10c0/cb97827d476aab1a0194df33cd84624952480d92da46e6b4a19c32964aa01553a4a613502396712704da2ec8f831cf98d02e74ca03398404bd78a037ba93f2ab
@@ -798,13 +737,6 @@ __metadata:
     es-errors: "npm:^1.3.0"
     function-bind: "npm:^1.1.2"
   checksum: 10c0/47bd9901d57b857590431243fea704ff18078b16890a6b3e021e12d279bbf211d039155e27d7566b374d49ee1f8189344bac9833dec7a20cdec370506361c938
-  languageName: node
-  linkType: hard
-
-"camelcase@npm:^5.3.1":
-  version: 5.3.1
-  resolution: "camelcase@npm:5.3.1"
-  checksum: 10c0/92ff9b443bfe8abb15f2b1513ca182d16126359ad4f955ebc83dc4ddcc4ef3fdd2c078bc223f2673dc223488e75c99b16cc4d056624374b799e6a1555cf61b23
   languageName: node
   linkType: hard
 
@@ -1065,13 +997,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv@npm:10.0.0":
-  version: 10.0.0
-  resolution: "dotenv@npm:10.0.0"
-  checksum: 10c0/2d8d4ba64bfaff7931402aa5e8cbb8eba0acbc99fe9ae442300199af021079eafa7171ce90e150821a5cb3d74f0057721fbe7ec201a6044b68c8a7615f8c123f
-  languageName: node
-  linkType: hard
-
 "dunder-proto@npm:^1.0.1":
   version: 1.0.1
   resolution: "dunder-proto@npm:1.0.1"
@@ -1265,15 +1190,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"find@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "find@npm:0.3.0"
-  dependencies:
-    traverse-chain: "npm:~0.1.0"
-  checksum: 10c0/cb425fd4ea873bd25431fa41597852a3e18febb41eef44cba1e7660c85ebfc09b2d7da2e914602f30035339b873e8c61e3f73a0a8c02011f9e8c9053d4733417
-  languageName: node
-  linkType: hard
-
 "flat@npm:^5.0.2":
   version: 5.0.2
   resolution: "flat@npm:5.0.2"
@@ -1446,7 +1362,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graceful-fs@npm:^4.2.6":
+"graceful-fs@npm:^4.1.6, graceful-fs@npm:^4.2.6":
   version: 4.2.11
   resolution: "graceful-fs@npm:4.2.11"
   checksum: 10c0/386d011a553e02bc594ac2ca0bd6d9e4c22d7fa8cfbfc448a6d148c59ea881b092db9dbe3547ae4b88e55f1b01f7c4a2ecc53b310c042793e63aa44cf6c257f2
@@ -1698,13 +1614,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-sha256@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "js-sha256@npm:0.9.0"
-  checksum: 10c0/f20b9245f6ebe666f42ca05536f777301132fb1aa7fbc22f10578fa302717a6cca507344894efdeaf40a011256eb2f7d517b94ac7105bd5cf087fa61551ad634
-  languageName: node
-  linkType: hard
-
 "js-yaml@npm:4.1.0":
   version: 4.1.0
   resolution: "js-yaml@npm:4.1.0"
@@ -1738,6 +1647,28 @@ __metadata:
   bin:
     json5: lib/cli.js
   checksum: 10c0/9ee316bf21f000b00752e6c2a3b79ecf5324515a5c60ee88983a1910a45426b643a4f3461657586e8aeca87aaf96f0a519b0516d2ae527a6c3e7eed80f68717f
+  languageName: node
+  linkType: hard
+
+"json5@npm:^2.2.2":
+  version: 2.2.3
+  resolution: "json5@npm:2.2.3"
+  bin:
+    json5: lib/cli.js
+  checksum: 10c0/5a04eed94810fa55c5ea138b2f7a5c12b97c3750bc63d11e511dcecbfef758003861522a070c2272764ee0f4e3e323862f386945aeb5b85b87ee43f084ba586c
+  languageName: node
+  linkType: hard
+
+"jsonfile@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "jsonfile@npm:6.1.0"
+  dependencies:
+    graceful-fs: "npm:^4.1.6"
+    universalify: "npm:^2.0.0"
+  dependenciesMeta:
+    graceful-fs:
+      optional: true
+  checksum: 10c0/4f95b5e8a5622b1e9e8f33c96b7ef3158122f595998114d1e7f03985649ea99cb3cd99ce1ed1831ae94c8c8543ab45ebd044207612f31a56fd08462140e46865
   languageName: node
   linkType: hard
 
@@ -2279,7 +2210,7 @@ __metadata:
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
     "@coral-xyz/anchor": "npm:^0.29.0"
-    "@raydium-io/raydium-sdk-v2": "npm:^0.1.13-alpha"
+    "@raydium-io/raydium-sdk-v2": "npm:0.1.135-alpha"
     "@solana/spl-token": "npm:^0.4.0"
     "@solana/web3.js": "npm:^1.90.0"
     "@types/bn.js": "npm:^5.1.0"
@@ -2604,13 +2535,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"traverse-chain@npm:~0.1.0":
-  version: 0.1.0
-  resolution: "traverse-chain@npm:0.1.0"
-  checksum: 10c0/2b4fc19b52692c4970a18a777ba19ecbc1664f25b33815a5e5f06d0311e9e6a65ad2511b86e4ff0f0211ca0bf242a8ec3a902d8893c9d6a8f9d3ef4e658e2b24
-  languageName: node
-  linkType: hard
-
 "ts-mocha@npm:^10.0.0":
   version: 10.1.0
   resolution: "ts-mocha@npm:10.1.0"
@@ -2655,6 +2579,17 @@ __metadata:
     minimist: "npm:^1.2.6"
     strip-bom: "npm:^3.0.0"
   checksum: 10c0/5b4f301a2b7a3766a986baf8fc0e177eb80bdba6e396792ff92dc23b5bca8bb279fc96517dcaaef63a3b49bebc6c4c833653ec58155780bc906bdbcf7dda0ef5
+  languageName: node
+  linkType: hard
+
+"tsconfig-paths@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "tsconfig-paths@npm:4.2.0"
+  dependencies:
+    json5: "npm:^2.2.2"
+    minimist: "npm:^1.2.6"
+    strip-bom: "npm:^3.0.0"
+  checksum: 10c0/09a5877402d082bb1134930c10249edeebc0211f36150c35e1c542e5b91f1047b1ccf7da1e59babca1ef1f014c525510f4f870de7c9bda470c73bb4e2721b3ea
   languageName: node
   linkType: hard
 
@@ -2714,6 +2649,13 @@ __metadata:
   dependencies:
     imurmurhash: "npm:^0.1.4"
   checksum: 10c0/d324c5a44887bd7e105ce800fcf7533d43f29c48757ac410afd42975de82cc38ea2035c0483f4de82d186691bf3208ef35c644f73aa2b1b20b8e651be5afd293
+  languageName: node
+  linkType: hard
+
+"universalify@npm:^2.0.0":
+  version: 2.0.1
+  resolution: "universalify@npm:2.0.1"
+  checksum: 10c0/73e8ee3809041ca8b818efb141801a1004e3fc0002727f1531f4de613ea281b494a40909596dae4a042a4fb6cd385af5d4db2e137b1362e0e91384b828effd3a
   languageName: node
   linkType: hard
 

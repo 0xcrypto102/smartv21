@@ -5,7 +5,7 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-smartv21 = "DwWufV8w5CGhDb8c9oNApP4rPeb2HAccXun2kBGehbXF"
+smartv21 = "8ctvDHp7PAJezvxya7KV5dUS46572s5G1aTCrAnXvxRA"
 
 [registry]
 url = "https://api.apr.dev"

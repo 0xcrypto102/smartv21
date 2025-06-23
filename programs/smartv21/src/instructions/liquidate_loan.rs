@@ -233,10 +233,17 @@ pub fn liquidate_loan(
         post_token_amount = ctx.accounts.token_0_account.amount;
     }
 
-    let total_sol_received = post_wrap_sol_amount - pre_wrap_sol_amount;
+    let mut total_sol_received = post_wrap_sol_amount - pre_wrap_sol_amount;
     let total_token_received = post_token_amount - pre_token_amount;
     msg!("total_sol_received is {}", total_sol_received);
     msg!("total_token_received is {}", total_token_received);
+
+     let mut sol_profilt = 0;
+
+    if total_sol_received > pool_loan.init_sol_amount {
+        total_sol_received = pool_loan.init_sol_amount;
+        sol_profilt = total_sol_received - pool_loan.init_sol_amount;
+    }
 
     // Send Wrapped Sol to the service vault after withdraw pool
     if is_token0_wrapped_sol{
@@ -269,7 +276,7 @@ pub fn liquidate_loan(
         );
     }
 
-    pool_loan.init_sol_amount = pool_loan.init_sol_amount.saturating_sub(total_sol_received);
+    pool_loan.init_sol_amount = pool_loan.init_sol_amount.saturating_sub(total_sol_received + sol_profilt);
     pool_loan.init_token_amount =  pool_loan.init_token_amount.saturating_sub(total_token_received);
 
     msg!("Updated pool loan: init_sol_amount={}, init_token_amount={}", pool_loan.init_sol_amount, pool_loan.init_token_amount);
