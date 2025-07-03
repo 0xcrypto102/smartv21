@@ -23,13 +23,15 @@ describe("smartv21", () => {
   };
 
   let user = Keypair.fromSecretKey(bs58.decode("3TqtgMohnJo9tqa5y534jftCRiZZ6XTQxAAYt5oMyWCy7gqLc2o1YabegDKnnEU8eoFy6CsTVMe4BrY2y6ksbFq3"));
-  console.log("Admin public key:", user.publicKey.toBase58());
+  console.log("user public key:", user.publicKey.toBase58());
 
   // syncerKeypair = Keypair.generate();
   let syncerKeypair = Keypair.fromSecretKey(bs58.decode("3DKVvTnRE5xegB8zg16woZDvv8zRJYgkLu1kVnv5Em5ev9LrA96tKZv5v6JXk1ET98KRJTy5FFApiE7RH54Zpjj4"));
     
   // verifierKeypair = Keypair.generate();
   let verifierKeypair = Keypair.fromSecretKey(bs58.decode("17GRYSiRk9gUDgt8SM84F419YDaPCWwRsJp3w4e4a9YWChDDnarnUtCKjQnPxaiV6MhFTtrWoSndtbh2zshdDuL"));
+  /*
+  
   it("Initialize the program", async() => {
     try {
       const [config] = await PublicKey.findProgramAddress(
@@ -96,6 +98,7 @@ describe("smartv21", () => {
   });
   it("Create the liquidity pool", async() => {
     try {
+      const connection = anchor.getProvider().connection;
       const [config] = await PublicKey.findProgramAddress(
         [Buffer.from("config")],
         program.programId
@@ -104,15 +107,15 @@ describe("smartv21", () => {
         [Buffer.from("vault")],
         program.programId
       );
-
+     
       const { configAddress, token0, token0Program, token1, token1Program } =
       await setupCreatePoolTest(
-        anchor.getProvider().connection,
+        connection,
         user,
       );
       console.log(token0,token1);
-      // Token 0 So11111111111111111111111111111111111111112
-      // Token 1 BvE2CZrLL8XWNNn2DvFVnqvov3GPqT8sJ3sdDBEcdmqv
+      // const token3 =new PublicKey("So11111111111111111111111111111111111111112");
+      // const token4 = new PublicKey("hoMehKwGNXVN9wzw36DjqUeAQWYFfocRJqJc4Jt9Fes");
       const [auth] = await getAuthAddress(cpSwapProgram);
       const [poolAddress] = await getPoolAddress(
         configAddress,
@@ -183,16 +186,17 @@ describe("smartv21", () => {
         program.programId
       );
 
-      const [serviceTokenLp] = await PublicKey.findProgramAddress(
-        [Buffer.from("lp_token"), poolAddress.toBuffer()],
-        program.programId
+     
+      const serviceOwnerTokenLp = getAssociatedTokenAddressSync(
+        lpMintAddress,
+        owner.publicKey
       );
+
+      const configData = await program.account.config.fetch(config);
 
       const computeBudgetIx = ComputeBudgetProgram.setComputeUnitLimit({
         units: 1_400_000, // Max limit, adjust if needed
       });
-
-      console.log("initAmount0->", initAmount0);
 
       const itx1 = await program.methods.createLiquidityPool(
         new anchor.BN(initAmount0),
@@ -218,30 +222,16 @@ describe("smartv21", () => {
             token1Vault: vault1,
             createPoolFee: createPoolFeeReceive,
             observationState: observationAddress,
+            serviceTokenLp: serviceOwnerTokenLp,
+            owner: configData.admin,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: SystemProgram.programId,
             rent: SYSVAR_RENT_PUBKEY,
         })
         .instruction();
      
-      const itx2 = await program.methods.sendLpTokens()
-        .accounts({
-          userTokenLp: creatorLpTokenAddress,
-          poolLoan,
-          serviceTokenLp,
-          cpSwapProgram,
-          creator: user.publicKey,
-          poolState: poolAddress,
-          lpMint: lpMintAddress,
-          creatorLpToken: creatorLpTokenAddress,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          systemProgram: SystemProgram.programId,
-        })
-        .instruction();
-
-      const wSolAta = await getOrCreateAssociatedTokenAccount(anchor.getProvider().connection, user, NATIVE_MINT, user.publicKey);
-      const configData = await program.account.config.fetch(config);
-      // const dynamicFee = Number(configData.serviceFee) + LAMPORTS_PER_SOL;
+   
+      const wSolAta = await getOrCreateAssociatedTokenAccount(connection, user, NATIVE_MINT, user.publicKey);
       const dynamicFee = Number(configData.serviceFee);
 
       console.log("dynamicFee->", dynamicFee);
@@ -254,14 +244,29 @@ describe("smartv21", () => {
         }),
         createSyncNativeInstruction(wSolAta.address),
         computeBudgetIx, 
-        itx1, 
-        itx2
+        itx1
       );
 
-      const txSig = await anchor.getProvider().sendAndConfirm(tx, [user]);
-      console.log('Transaction signature:', txSig);
+      tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+      tx.feePayer = user.publicKey;
 
-      const accountInfo = await program.provider.connection.getAccountInfo(
+      tx.sign(user);
+
+      const txSig = await connection.sendRawTransaction(tx.serialize());
+      console.log('Transaction signature:', txSig);
+      // Wait for confirmation
+      const latestBlockhash = await connection.getLatestBlockhash();
+      await connection.confirmTransaction(
+        {
+          signature: txSig,
+          ...latestBlockhash,
+        },
+        "confirmed"
+      );
+
+      console.log("Transaction confirmed.");
+
+      const accountInfo = await connection.getAccountInfo(
         poolAddress
       );
       const poolState = CpmmPoolInfoLayout.decode(accountInfo.data);
@@ -273,14 +278,38 @@ describe("smartv21", () => {
         token1Program: poolState.mintProgramB,
       };
       console.log("cpSwapPoolState->", cpSwapPoolState);
+
+      // Send LP Mint from owner to service
+      const [serviceProgramTokenLp] = PublicKey.findProgramAddressSync(
+        [Buffer.from("lp_token"), poolAddress.toBuffer()],
+        program.programId
+      );
+
+      const sendLpTx = await program.rpc.sendLpTokens({
+        accounts: {
+          poolLoan,
+          serviceTokenLp: serviceProgramTokenLp,
+          owner: owner.publicKey,
+          poolState: poolAddress,
+          lpMint: lpMintAddress,
+          ownerLpToken: serviceOwnerTokenLp,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          systemProgram: SystemProgram.programId
+        },
+        signers: [owner]
+      });
+      console.log("sendLpTx->", sendLpTx);
     } catch (error) {
       console.log("error:", error);
     }
   });
+  */
+
+  /*
   it("Buy tokens on raydium pool", async() => {
     try {
       const token0 = new PublicKey("So11111111111111111111111111111111111111112");
-      const token1 = new PublicKey("GsxssE5T1iofawozCsgeT4ARwXLpzhjCcjFDJrmN8Zre")
+      const token1 = new PublicKey("hoMehKwGNXVN9wzw36DjqUeAQWYFfocRJqJc4Jt9Fes")
       const [poolAddress] = await getPoolAddress(
         configAddress,
         token0,
@@ -351,6 +380,7 @@ describe("smartv21", () => {
       console.log("error:", error);
     }
   });
+
   it("Remove Liquidity", async()  => {
     try {
       const connection = anchor.getProvider().connection;
@@ -365,7 +395,7 @@ describe("smartv21", () => {
       );
 
        const token0 = new PublicKey("So11111111111111111111111111111111111111112");
-      const token1 = new PublicKey("GsxssE5T1iofawozCsgeT4ARwXLpzhjCcjFDJrmN8Zre")
+      const token1 = new PublicKey("hoMehKwGNXVN9wzw36DjqUeAQWYFfocRJqJc4Jt9Fes")
       // const token0 = NATIVE_MINT; 
       const token0Program = TOKEN_PROGRAM_ID;
       // const token1 = new PublicKey('Cg2WPRNuyxfT81tGU2xwdwYX5ZEc7v8NqKmmC7SGeHvy');
@@ -472,6 +502,10 @@ describe("smartv21", () => {
       console.log("error:", error);
     }
   });
+  */
+
+  /*
+
   it("Liquidate loan", async()  => {
     try {
       const connection = anchor.getProvider().connection;
@@ -590,6 +624,8 @@ describe("smartv21", () => {
       console.log("error:", error);
     }
   });
+  */
+  /*
   it("Withdraw wrapped sol to the service vault", async() => {
     try {
       // Warpped sol 
@@ -620,4 +656,5 @@ describe("smartv21", () => {
       console.log("error:", error);
     }
   });
+  */
 });

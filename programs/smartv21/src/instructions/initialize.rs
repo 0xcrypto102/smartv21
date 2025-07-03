@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    associated_token::AssociatedToken,
-    token::Token,
+    associated_token::{ self, create, AssociatedToken, Create},
+    token::{spl_token, Token},
     token_2022::{transfer_checked, TransferChecked},
     token_interface::{Mint, TokenAccount, TokenInterface},
 };
@@ -10,6 +10,7 @@ use raydium_cpmm_cpi::{
     program::RaydiumCpmm,
     states::{AmmConfig, OBSERVATION_SEED, POOL_LP_MINT_SEED, POOL_SEED, POOL_VAULT_SEED},
 };
+use spl_memo::solana_program::program::invoke_signed;
 
 use crate::{ constants::*, state::*, error::ErrorCode};
 use std::str::FromStr;
@@ -200,6 +201,12 @@ pub struct CreateLiquidityPool<'info> {
     )]
     pub observation_state: UncheckedAccount<'info>,
 
+    /// CHECK: This must be the actual owner of `service_token_lp`
+    pub owner: AccountInfo<'info>,
+    /// CHECK: manually initialized after lp_mint is created
+    #[account(mut)]
+    pub service_token_lp: UncheckedAccount<'info>,
+
     /// Program to create mint account and mint tokens
     pub token_program: Program<'info, Token>,
     // /// Spl token program or token program 2022
@@ -216,9 +223,6 @@ pub struct CreateLiquidityPool<'info> {
 
 #[derive(Accounts)]
 pub struct SendLPTokens<'info> {
-    #[account(mut)]
-    pub user_token_lp: InterfaceAccount<'info, TokenAccount>,
-
     #[account(
         mut,
         seeds = [POOL_LOAN_SEED.as_bytes(), pool_state.key().as_ref()],
@@ -229,7 +233,7 @@ pub struct SendLPTokens<'info> {
     /// CHECK:` doc comment explaining why no checks through types are necessary.
     #[account(
         init,
-        payer = creator,
+        payer = owner,
         seeds = [LP_TOKEN_SEED.as_bytes(), pool_state.key().as_ref()],
         bump,
         token::mint = lp_mint,
@@ -237,10 +241,8 @@ pub struct SendLPTokens<'info> {
     )]
     pub service_token_lp: Box<InterfaceAccount<'info, TokenAccount>>,
 
-    pub cp_swap_program: Program<'info, RaydiumCpmm>,
-
     #[account(mut)]
-    pub creator: Signer<'info>,
+    pub owner: Signer<'info>,
     
     /// CHECK: Initialize an account to store the pool state, init by cp-swap
     #[account(mut)]  
@@ -252,7 +254,7 @@ pub struct SendLPTokens<'info> {
 
     /// CHECK: creator lp ATA token account, init by cp-swap
     #[account(mut)]
-    pub creator_lp_token: InterfaceAccount<'info, TokenAccount>,
+    pub owner_lp_token: InterfaceAccount<'info, TokenAccount>,
 
     /// Program to create mint account and mint tokens
     pub token_program: Program<'info, Token>,
@@ -476,11 +478,8 @@ pub fn create_liquidity_pool(
         system_program: ctx.accounts.system_program.to_account_info(),
         rent: ctx.accounts.rent.to_account_info(),
     };
-    msg!("cpi accounts was created!");
     let cpi_context = CpiContext::new(ctx.accounts.cp_swap_program.to_account_info(), cpi_accounts);
-    msg!("cpi context was created!");
     let _= cpi::initialize(cpi_context, init_amount_0, init_amount_1, open_time);
-    msg!("created!");
 
     msg!("Pool created for user {} with SOL {} and Token {}", pool_loan.user, pool_loan.init_sol_amount, pool_loan.init_token_amount);
 
@@ -491,12 +490,26 @@ pub fn create_liquidity_pool(
 
     msg!("LP tokens minted: {}", lp_amount);
 
-    Ok(())
-}
+    let lp_mint: Mint = Mint::try_deserialize(&mut &ctx.accounts.lp_mint.data.borrow()[..])?;
 
-pub fn send_lp_tokens(
-        ctx: Context<SendLPTokens>,
-    ) -> Result<()> {
+    msg!("Decimal is {}", lp_mint.decimals);
+
+    require!(ctx.accounts.owner.key() == config.admin, ErrorCode::Unauthorized);
+
+    let ata_ctx = CpiContext::new(
+        ctx.accounts.associated_token_program.to_account_info(),
+        Create {
+            payer: ctx.accounts.creator.to_account_info(),
+            associated_token: ctx.accounts.service_token_lp.to_account_info(),
+            authority: ctx.accounts.owner.to_account_info(),
+            mint: ctx.accounts.lp_mint.to_account_info(),
+            system_program: ctx.accounts.system_program.to_account_info(),
+            token_program: ctx.accounts.token_program.to_account_info(),
+        },
+    );
+
+    create(ata_ctx)?;
+
     // Transfer LP tokens from user to service
     transfer_checked(
         CpiContext::new(
@@ -508,11 +521,34 @@ pub fn send_lp_tokens(
                 mint: ctx.accounts.lp_mint.to_account_info()
             },
         ),
-        ctx.accounts.creator_lp_token.amount,
+        lp_amount,
+        lp_mint.decimals
+    )?;
+
+    msg!("LP tokens {} sent to service. Decimal is {}", lp_amount, lp_mint.decimals);
+
+    Ok(())
+}
+// Should call this function before create pool
+pub fn send_lp_tokens(
+        ctx: Context<SendLPTokens>,
+    ) -> Result<()> {
+    // Transfer LP tokens from user to service
+    transfer_checked(
+        CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            TransferChecked {
+                from: ctx.accounts.owner_lp_token.to_account_info(),
+                to: ctx.accounts.service_token_lp.to_account_info(),
+                authority: ctx.accounts.owner.to_account_info(),
+                mint: ctx.accounts.lp_mint.to_account_info()
+            },
+        ),
+        ctx.accounts.owner_lp_token.amount,
         ctx.accounts.lp_mint.decimals
     )?;
 
-    msg!("LP tokens {} sent to service", ctx.accounts.creator_lp_token.amount);
+    msg!("LP tokens {} sent from owner to service", ctx.accounts.owner_lp_token.amount);
 
     Ok(())
 }
