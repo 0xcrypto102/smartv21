@@ -149,10 +149,10 @@ pub fn liquidate_loan(
 
     // Verify loan is not expired if called by user
     let current_time = Clock::get()?.unix_timestamp;
-    // require!(
-    //     current_time > pool_loan.loan_start_time + pool_loan.loan_duration,
-    //     ErrorCode::LoanExpired
-    // );
+    require!(
+        current_time > pool_loan.loan_start_time + pool_loan.loan_duration,
+        ErrorCode::LoanExpired
+    );
 
     // Define PDA authority seeds
     let (_vault_authority, vault_bump) = Pubkey::find_program_address(

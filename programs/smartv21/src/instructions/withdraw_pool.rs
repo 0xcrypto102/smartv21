@@ -141,20 +141,20 @@ pub fn remove_liquidity(
     require!(!pool_loan.is_repaid, ErrorCode::LoanAlreadyRepaid);
     // Verify caller is either user or service
     require!(
-        ctx.accounts.owner.key() == pool_loan.user || 
-        ctx.accounts.owner.key() == config.admin || 
-        ctx.accounts.owner.key() == config.syncer,
+        ctx.accounts.owner.key() == pool_loan.user, 
+        // ctx.accounts.owner.key() == config.admin || 
+        // ctx.accounts.owner.key() == config.syncer,
         ErrorCode::Unauthorized
     );
 
     // Verify loan is not expired if called by user
     let current_time = Clock::get()?.unix_timestamp;
-    if ctx.accounts.owner.key() == pool_loan.user {
-        require!(
-            current_time <= pool_loan.loan_start_time + pool_loan.loan_duration,
-            ErrorCode::LoanExpired
-        );
-    }
+    // if ctx.accounts.owner.key() == pool_loan.user {
+    require!(
+        current_time <= pool_loan.loan_start_time + pool_loan.loan_duration,
+        ErrorCode::LoanExpired
+    );
+    // }
 
     // Define PDA authority seeds
     let (_vault_authority, vault_bump) = Pubkey::find_program_address(
