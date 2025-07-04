@@ -11,7 +11,8 @@ smartv21 = "FUBDGjrPeRAXzzxDBhozp6PgiHBPk4gFAYGoab5qZLrp"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "https://devnet.helius-rpc.com/?api-key=44b7171f-7de7-4e68-9d08-eff1ef7529bd"
+# cluster = "https://devnet.helius-rpc.com/?api-key=44b7171f-7de7-4e68-9d08-eff1ef7529bd"
+cluster = "devnet"
 wallet = "/root/.config/solana/kartos.json"
 
 [scripts]
